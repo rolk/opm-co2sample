@@ -58,6 +58,26 @@ target_link_libraries (co2_3d ${opm-co2sample_LIBRARIES})
 # queue this executable to be stripped
 strip_debug_symbols (RUNTIME co2_3d)
 
+# look for the vertical equilibrium library
+if (NOT DEFINED opm-verteq_DIR)
+	set (opm-verteq_DIR
+		"${PROJECT_BINARY_DIR}/../opm-verteq" CACHE LOCATION
+		"Build tree of opm-verteq"
+		)
+endif (NOT DEFINED opm-verteq_DIR)
+find_and_append_package (opm-verteq REQUIRED)
+include_directories (${opm-co2sample_INCLUDE_DIRS})
+link_directories (${opm-co2sample_LIBRARY_DIRS})
+add_definitions (${opm-co2sample_DEFINITIONS})
+
+# locate source files that makes out program(s)
+file (GLOB_RECURSE co2_2d_SOURCES "2d/*.cpp")
+add_executable (co2_2d ${co2_2d_SOURCES})
+target_link_libraries (co2_2d ${opm-co2sample_LIBRARIES})
+
+# queue this executable to be stripped
+strip_debug_symbols (RUNTIME co2_2d)
+
 # example input file (realize directory names)
 configure_file (
   ${PROJECT_SOURCE_DIR}/data/tube.param.in
