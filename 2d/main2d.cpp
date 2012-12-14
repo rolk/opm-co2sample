@@ -13,6 +13,7 @@
 #include <opm/core/linalg/LinearSolverIstl.hpp>
 #include <opm/core/simulator/SimulatorIncompTwophase.hpp>
 #include <opm/core/simulator/SimulatorReport.hpp>
+#include <opm/verteq/VertEqUpscaling.hpp>
 
 #include <iostream>
 #include <vector>
@@ -30,6 +31,7 @@ int main (int argc, char *argv[]) {
 	const string filename = param.get <string> ("filename");
 	cout << "Reading deck: " << filename << endl;
 	const EclipseGridParser parser (filename);
+	const string title = parser.getTITLE().name();
 
 	// extract grid from the parse tree
 	const GridManager gridMan (parser);
@@ -55,9 +57,13 @@ int main (int argc, char *argv[]) {
 	SimulatorTimer stepping;
 	stepping.init (parser);
 
+	// create vertical upscaling
+	auto veq = unique_ptr <VertEqUpscaling> (
+	      VertEqUpscaling::create (title, param, grid));
+
 	// pressure and transport solvers
 	LinearSolverIstl linsolver;
-	SimulatorIncompTwophase sim (param, grid, fluid, 0, wells,
+	SimulatorIncompTwophase sim (param, veq->grid(), fluid, 0, wells,
 	                             src, bc.c_bcs(), linsolver, gravity);
 
 	// if some parameters were unused, it may be that they're spelled wrong
